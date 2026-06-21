@@ -1,0 +1,11 @@
+{
+  "appId": "com.fern.app",
+  "appName": "Fern",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#f0eeeb"
+  }
+}

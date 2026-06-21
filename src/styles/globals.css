@@ -1,0 +1,151 @@
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Pointer cursor on all interactive elements ── */
+button, a, [role="button"], select, summary {
+  cursor: pointer;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Default transition timing for interactive states.
+   Only kicks in when an element hasn't declared its own duration,
+   so existing inline transitions are untouched.
+   ────────────────────────────────────────────────────────────── */
+button, a, [role="button"], summary,
+.transition, .transition-all, .transition-colors,
+.transition-opacity, .transition-transform, .transition-shadow {
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-out);
+}
+
+/* ── Birthday banner confetti ──────────────────────────── */
+@keyframes confetti-float {
+  0%   { transform: translateY(0px)  rotate(0deg);   opacity: 0.5; }
+  33%  { transform: translateY(-8px) rotate(130deg); opacity: 0.85; }
+  66%  { transform: translateY(4px)  rotate(250deg); opacity: 0.55; }
+  100% { transform: translateY(0px)  rotate(360deg); opacity: 0.5; }
+}
+@keyframes confetti-float-b {
+  0%   { transform: translateY(0px)  rotate(0deg)   scale(1);    opacity: 0.45; }
+  40%  { transform: translateY(6px)  rotate(-150deg) scale(1.2); opacity: 0.8; }
+  80%  { transform: translateY(-5px) rotate(-280deg) scale(0.9); opacity: 0.6; }
+  100% { transform: translateY(0px)  rotate(-360deg) scale(1);   opacity: 0.45; }
+}
+@keyframes cake-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(168,85,247,0); }
+  50%       { box-shadow: 0 0 10px 3px rgba(168,85,247,0.35); }
+}
+
+/* ── Weather widget animations ─────────────────────────── */
+@keyframes fern-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-7px); }
+}
+@keyframes fern-spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes fern-glow-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%       { opacity: 1;    transform: scale(1.18); }
+}
+@keyframes fern-twinkle {
+  0%, 100% { opacity: 0.2; }
+  50%       { opacity: 0.9; }
+}
+@keyframes fern-drift {
+  0%, 100% { transform: translateX(0px); }
+  50%       { transform: translateX(9px); }
+}
+@keyframes fern-rain-drop {
+  0%   { transform: translateY(-8px); opacity: 0; }
+  30%  { opacity: 0.7; }
+  100% { transform: translateY(32px); opacity: 0; }
+}
+
+/* Hide scrollbars everywhere — mobile and desktop */
+*, *::before, *::after {
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE / Edge */
+}
+*::-webkit-scrollbar {
+  display: none;               /* Chrome / Safari / Opera */
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Force light calendar/date picker regardless of OS dark mode */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"] {
+  color-scheme: light;
+}
+
+/* Hide number input spinners */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* ─── Print styles ─── */
+@media print {
+  html, body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Hide all layout chrome */
+  aside,
+  nav {
+    display: none !important;
+  }
+
+  /* Hide interactive / screen-only elements */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Let main scroll area expand for print */
+  main {
+    overflow: visible !important;
+  }
+
+  /* Invoice document card — remove border-radius + border for clean paper look */
+  .invoice-doc {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Strip the coloured accent stripe (ink-heavy, not needed on paper) */
+  .invoice-stripe {
+    display: none !important;
+  }
+
+  /* Outer page container — remove padding so doc fills the page */
+  .invoice-print-root {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 15mm 15mm 15mm 15mm;
+  }
+}
