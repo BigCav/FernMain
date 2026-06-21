@@ -362,7 +362,7 @@ export function Tasks() {
               placeholder="Category…"
               options={CATEGORIES.filter(c => c.value !== 'all').map(c => ({ label: c.label, value: c.value }))}
             />
-            <div className="flex gap-3">
+            <div className="flex flex-col md:flex-row gap-3">
               <div className="flex-1">
                 <p style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Due Date</p>
                 <div className="relative">

@@ -146,14 +146,17 @@ export function Layout() {
   const mobileBellRef = useRef<HTMLButtonElement>(null);
   const { pathname } = useLocation();
 
+  const [tourFinishing, setTourFinishing] = useState(false);
+
   function dismissTour() {
     setNavTour(false);
+    setTourFinishing(false);
+    setTourIdx(0);
     localStorage.removeItem('fern_nav_tour_pending');
   }
 
   useEffect(() => {
     if (!navTour) return;
-    // Scroll the highlighted item into the centre of the container
     const el = navItemRefs.current[tourIdx];
     if (el && navScrollRef.current) {
       const container = navScrollRef.current;
@@ -162,8 +165,17 @@ export function Layout() {
     }
     const isLast = tourIdx >= NAV.length - 1;
     const t = setTimeout(() => {
-      if (isLast) { dismissTour(); } else { setTourIdx(i => i + 1); }
-    }, isLast ? 1500 : 1500);
+      if (isLast) {
+        // Scroll back to first item
+        setTourIdx(0);
+        setTourFinishing(true);
+        if (navScrollRef.current) navScrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        // Show spinner for 1.8s then dismiss
+        setTimeout(dismissTour, 1800);
+      } else {
+        setTourIdx(i => i + 1);
+      }
+    }, 1500);
     return () => clearTimeout(t);
   }, [navTour, tourIdx]);
 
@@ -475,86 +487,89 @@ export function Layout() {
           return (
             <motion.div
               key="nav-tour"
-              className="md:hidden fixed inset-0 z-[55]"
+              className="md:hidden fixed inset-0 z-[55] flex flex-col"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
               onClick={dismissTour}
+              style={{ background: 'rgba(0,0,0,0.55)' }}
             >
-              {/* Tooltip card */}
-              <motion.div
-                className="absolute left-3 right-3 flex flex-col"
-                style={{ bottom: 'calc(max(env(safe-area-inset-bottom), 12px) + 76px)' }}
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 8 }}
-                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                onClick={e => e.stopPropagation()}
-              >
-                <div
-                  className="rounded-2xl overflow-hidden"
-                  style={{
-                    background: '#1c1c1e',
-                    boxShadow: '0 8px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.07)',
-                  }}
+              {/* Centre message */}
+              <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: '#ea580c' }}>
+                  <Leaf width={24} height={24} style={{ color: '#fff' }} />
+                </div>
+                <p style={{ fontSize: '22px', fontWeight: 800, color: '#fff', letterSpacing: '-0.03em', marginBottom: '8px' }}>
+                  Here's how to navigate Fern
+                </p>
+                <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
+                  Swipe the bar below to reach any section
+                </p>
+              </div>
+
+              {/* Spinner shown when finishing */}
+              <AnimatePresence>
+                {tourFinishing && (
+                  <motion.div
+                    className="absolute inset-0 flex items-center justify-center"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    style={{ background: 'rgba(0,0,0,0.7)' }}
+                  >
+                    <style>{`
+                      @keyframes fern-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                    `}</style>
+                    <div style={{
+                      width: '48px', height: '48px',
+                      border: '4px solid rgba(234,88,12,0.25)',
+                      borderTopColor: '#ea580c',
+                      borderRadius: '50%',
+                      animation: 'fern-spin 0.75s linear infinite',
+                    }} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Tooltip card above nav */}
+              {!tourFinishing && (
+                <motion.div
+                  className="absolute left-3 right-3 flex flex-col"
+                  style={{ bottom: 'calc(max(env(safe-area-inset-bottom), 12px) + 76px)' }}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                  onClick={e => e.stopPropagation()}
                 >
-                  {/* Main content */}
-                  <div className="flex items-center gap-3.5 px-4 pt-4 pb-3">
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ background: 'rgba(234,88,12,0.18)' }}
-                    >
-                      {TourIcon && <TourIcon width={17} height={17} style={{ color: '#ea580c' }} />}
+                  <div className="rounded-2xl overflow-hidden" style={{ background: '#1c1c1e', boxShadow: '0 8px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.07)' }}>
+                    <div className="flex items-center gap-3.5 px-4 pt-4 pb-3">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(234,88,12,0.18)' }}>
+                        {TourIcon && <TourIcon width={17} height={17} style={{ color: '#ea580c' }} />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff', letterSpacing: '-0.01em' }}>{item?.label}</p>
+                        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '1px' }}>{item?.tourDesc}</p>
+                      </div>
+                      <button onClick={dismissTour} className="flex-shrink-0 px-3 py-1.5 rounded-xl transition-all active:scale-95" style={{ background: 'rgba(255,255,255,0.08)', fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        Skip
+                      </button>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff', letterSpacing: '-0.01em' }}>
-                        {item?.label}
-                      </p>
-                      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '1px' }}>
-                        {item?.tourDesc}
-                      </p>
+                    <div className="mx-4 mb-3.5 rounded-full overflow-hidden" style={{ height: '3px', background: 'rgba(255,255,255,0.08)' }}>
+                      <motion.div className="h-full rounded-full" style={{ background: '#ea580c' }} animate={{ width: `${((tourIdx + 1) / NAV.length) * 100}%` }} transition={{ duration: 0.5, ease: 'easeOut' }} />
                     </div>
-                    <button
-                      onClick={dismissTour}
-                      className="flex-shrink-0 px-3 py-1.5 rounded-xl transition-all active:scale-95"
-                      style={{ background: 'rgba(255,255,255,0.08)', fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.1)' }}
-                    >
-                      Skip
-                    </button>
+                    <div className="px-4 pb-3.5 flex items-center justify-between">
+                      <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)' }}>Swipe the bar to reach any page</p>
+                      <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)' }}>{tourIdx + 1} / {NAV.length}</p>
+                    </div>
                   </div>
-
-                  {/* Progress bar */}
-                  <div className="mx-4 mb-3.5 rounded-full overflow-hidden" style={{ height: '3px', background: 'rgba(255,255,255,0.08)' }}>
-                    <motion.div
-                      className="h-full rounded-full"
-                      style={{ background: '#ea580c' }}
-                      animate={{ width: `${((tourIdx + 1) / NAV.length) * 100}%` }}
-                      transition={{ duration: 0.5, ease: 'easeOut' }}
-                    />
+                  <div className="flex justify-center">
+                    <div style={{ width: 0, height: 0, borderLeft: '9px solid transparent', borderRight: '9px solid transparent', borderTop: '8px solid #1c1c1e' }} />
                   </div>
-
-                  {/* Footer hint */}
-                  <div className="px-4 pb-3.5 flex items-center justify-between">
-                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)' }}>
-                      Swipe the bar to reach any page
-                    </p>
-                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)' }}>
-                      {tourIdx + 1} / {NAV.length}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Arrow pointing down toward the nav */}
-                <div className="flex justify-center">
-                  <div style={{
-                    width: 0, height: 0,
-                    borderLeft: '9px solid transparent',
-                    borderRight: '9px solid transparent',
-                    borderTop: '8px solid #1c1c1e',
-                  }} />
-                </div>
-              </motion.div>
+                </motion.div>
+              )}
             </motion.div>
           );
         })()}

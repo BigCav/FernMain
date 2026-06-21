@@ -225,7 +225,7 @@ function MockStatCard({
 
 export function LandingPage() {
   return (
-    <div style={{ background: '#f0eeeb', minHeight: '100vh', fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div className="flex flex-col" style={{ background: '#f0eeeb', minHeight: '100vh', fontFamily: "'Inter', system-ui, sans-serif" }}>
 
       {/* Nav */}
       <nav
@@ -539,8 +539,8 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ── Get the app section ── */}
-      <section className="mx-4 md:mx-10 lg:mx-auto max-w-5xl mb-12 md:mb-16 rounded-3xl overflow-hidden" style={{ background: '#111' }}>
+      {/* ── Get the app section — bottom on mobile, normal position on desktop ── */}
+      <section className="order-last md:order-none mx-4 md:mx-10 lg:mx-auto max-w-5xl mb-12 md:mb-16 rounded-3xl overflow-hidden" style={{ background: '#111' }}>
         <div className="px-8 py-12 md:px-12 md:py-14 flex flex-col md:flex-row items-center gap-10">
 
           {/* Left: text + button */}

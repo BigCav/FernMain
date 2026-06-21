@@ -71,7 +71,7 @@ export function Login() {
               value={email}
               onChange={e => { setEmail(e.target.value); setEmailError(''); }}
               placeholder="you@example.com"
-              autoFocus
+
               className="w-full px-3.5 py-3 rounded-xl outline-none transition-all"
               style={{
                 fontSize: '13px',

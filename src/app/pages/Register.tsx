@@ -140,7 +140,6 @@ export function Register() {
                   value={email}
                   onChange={e => { setEmail(e.target.value); setEmailError(''); }}
                   placeholder="you@example.com"
-                  autoFocus
                   className="w-full px-3.5 py-3 rounded-xl outline-none transition-all"
                   style={{
                     fontSize: '13px',
@@ -193,7 +192,6 @@ export function Register() {
                     value={password}
                     onChange={e => { setPassword(e.target.value); setPasswordError(''); }}
                     placeholder="At least 8 characters"
-                    autoFocus
                     className="w-full px-3.5 py-3 pr-10 rounded-xl outline-none transition-all"
                     style={{
                       fontSize: '13px',
