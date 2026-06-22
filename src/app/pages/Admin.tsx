@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { AdminPinGate } from '../components/AdminPinGate';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router';
 import {
@@ -36,11 +37,16 @@ interface RealUser {
 function fmtDate(iso: string) {
   if (!iso) return '—';
   const d = new Date(iso);
-  const diff = Math.round((Date.now() - d.getTime()) / 86400000);
-  if (diff === 0) return 'Today';
-  if (diff === 1) return 'Yesterday';
-  if (diff < 30)  return `${diff}d ago`;
-  if (diff < 365) return `${Math.floor(diff / 30)}mo ago`;
+  const ms   = Date.now() - d.getTime();
+  const mins = Math.floor(ms / 60000);
+  const hrs  = Math.floor(ms / 3600000);
+  const days = Math.floor(ms / 86400000);
+  if (mins < 2)   return 'Just now';
+  if (mins < 60)  return `${mins}m ago`;
+  if (hrs  < 24)  return `${hrs}h ago`;
+  if (days === 1) return 'Yesterday';
+  if (days < 30)  return `${days}d ago`;
+  if (days < 365) return `${Math.floor(days / 30)}mo ago`;
   return d.toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
@@ -290,34 +296,49 @@ export function Admin() {
       ]);
       if (profErr) throw profErr;
 
+      // kv_store values are wrapped: { version: N, data: <actual value> }
+      // We need to unwrap before reading fields
+      function unwrapKv(raw: unknown): unknown {
+        if (raw && typeof raw === 'object' && 'data' in (raw as object)) {
+          return (raw as { data: unknown }).data;
+        }
+        return raw;
+      }
+
       const animalCounts: Record<string, number> = {};
       for (const row of animalRows ?? []) {
         const uid = (row.key as string).split(':')[1];
-        animalCounts[uid] = Array.isArray(row.value) ? (row.value as unknown[]).length : 0;
+        const data = unwrapKv(row.value);
+        animalCounts[uid] = Array.isArray(data) ? (data as unknown[]).length : 0;
       }
 
-      const authByUid: Record<string, { created_at: string; last_sign_in_at: string }> = {};
-      for (const row of (authRows as { id: string; created_at: string; last_sign_in_at: string }[] | null) ?? []) {
-        authByUid[row.id] = { created_at: row.created_at, last_sign_in_at: row.last_sign_in_at };
+      // Build profile lookup keyed by uid — unwrap the wrapper
+      const profileByUid: Record<string, Record<string, unknown>> = {};
+      for (const row of profileRows ?? []) {
+        const uid = (row.key as string).split(':')[1];
+        profileByUid[uid] = (unwrapKv(row.value) ?? {}) as Record<string, unknown>;
       }
 
-      const realUsers: RealUser[] = (profileRows ?? [])
-        .map(row => {
-          const uid  = (row.key as string).split(':')[1];
-          const prof = (row.value ?? {}) as Record<string, unknown>;
-          const auth = authByUid[uid];
+      // Use authRows as the primary source so ALL auth users appear,
+      // even those who haven't completed onboarding yet
+      type AuthRow = { id: string; email: string; created_at: string; last_sign_in_at: string };
+      const authList = (authRows as AuthRow[] | null) ?? [];
+
+      const realUsers: RealUser[] = authList
+        .map(authUser => {
+          const prof = profileByUid[authUser.id] ?? {};
           return {
-            userId:         uid,
-            email:          (prof.email    as string)  ?? '',
+            userId:         authUser.id,
+            email:          authUser.email ?? (prof.email as string) ?? '',
             name:           (prof.name     as string)  ?? '',
             property:       (prof.property as string)  ?? '',
             region:         (prof.region   as string)  ?? '',
             fernPlus:       (prof.fernPlus       as boolean) ?? false,
             fernPlusExpiry: (prof.fernPlusExpiry  as string)  ?? null,
             fernPlusSource: (prof.fernPlusSource  as 'paid' | 'grant') ?? null,
-            createdAt:      auth?.created_at      ?? '',
-            lastSignIn:     auth?.last_sign_in_at ?? '',
-            animalCount:    animalCounts[uid] ?? 0,
+            createdAt:      authUser.created_at      ?? '',
+            lastSignIn:     authUser.last_sign_in_at ?? '',
+            animalCount:    animalCounts[authUser.id] ?? 0,
           };
         })
         .filter(u => u.email);
@@ -461,6 +482,7 @@ export function Admin() {
 
   // ── Render: main dashboard ────────────────────────────────────────────────────
   return (
+    <AdminPinGate>
     <div className="px-4 pt-6 md:px-8 md:pt-8 pb-12 max-w-7xl mx-auto">
 
       {/* Grant Plus modal */}
@@ -590,11 +612,11 @@ export function Admin() {
           <ResponsiveContainer width="100%" height={180}>
             <AreaChart data={growthData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
               <defs>
-                <linearGradient id="gU" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="admin-gU" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#e5e7eb" stopOpacity={0.6} />
                   <stop offset="100%" stopColor="#e5e7eb" stopOpacity={0.05} />
                 </linearGradient>
-                <linearGradient id="gP" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="admin-gP" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#ea580c" stopOpacity={0.5} />
                   <stop offset="100%" stopColor="#ea580c" stopOpacity={0.05} />
                 </linearGradient>
@@ -602,8 +624,8 @@ export function Admin() {
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} allowDecimals={false} />
               <Tooltip content={<ChartTip />} />
-              <Area type="monotone" dataKey="users" stroke="#d1d5db" strokeWidth={2} fill="url(#gU)" name="Total" />
-              <Area type="monotone" dataKey="plus"  stroke="#ea580c" strokeWidth={2} fill="url(#gP)" name="Plus"  />
+              <Area type="monotone" dataKey="users" stroke="#d1d5db" strokeWidth={2} fill="url(#admin-gU)" name="Total" />
+              <Area type="monotone" dataKey="plus"  stroke="#ea580c" strokeWidth={2} fill="url(#admin-gP)" name="Plus"  />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -647,14 +669,14 @@ export function Admin() {
             <ResponsiveContainer width="100%" height={70}>
               <AreaChart data={mrrData} margin={{ top: 2, right: 2, left: -30, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="gM" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="admin-gM" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#ea580c" stopOpacity={0.4} />
                     <stop offset="100%" stopColor="#ea580c" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
                 <Tooltip content={<ChartTip prefix="$" />} />
-                <Area type="monotone" dataKey="mrr" stroke="#ea580c" strokeWidth={2} fill="url(#gM)" />
+                <Area type="monotone" dataKey="mrr" stroke="#ea580c" strokeWidth={2} fill="url(#admin-gM)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -825,8 +847,10 @@ export function Admin() {
                       <span style={{
                         fontSize: '11px', fontWeight: 600,
                         color: !u.lastSignIn ? '#d1d5db'
-                          : new Date(u.lastSignIn).toDateString() === new Date().toDateString() ? '#16a34a'
-                          : (Date.now() - new Date(u.lastSignIn).getTime()) < 3 * 86400000 ? '#6b7280' : '#d1d5db',
+                          : (Date.now() - new Date(u.lastSignIn).getTime()) < 3600000   ? '#16a34a'  // < 1h  → green
+                          : (Date.now() - new Date(u.lastSignIn).getTime()) < 86400000  ? '#ea580c'  // < 24h → orange
+                          : (Date.now() - new Date(u.lastSignIn).getTime()) < 259200000 ? '#6b7280'  // < 3d  → grey
+                          : '#d1d5db',
                       }}>
                         {u.lastSignIn ? fmtDate(u.lastSignIn) : '—'}
                       </span>
@@ -893,5 +917,6 @@ export function Admin() {
       </div>
 
     </div>
+    </AdminPinGate>
   );
 }

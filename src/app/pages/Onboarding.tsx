@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import {
   ArrowRight, ArrowLeft, Check,
@@ -119,6 +119,7 @@ export function Onboarding() {
   const [step,      setStep]      = useState(1);
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
   const [animKey,   setAnimKey]   = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const [ownerName, setOwnerName] = useState(profile.name     !== 'Sarah Johnson'  ? profile.name     : '');
   const [blockName, setBlockName] = useState(profile.property !== 'Fernside Block' ? profile.property : '');
@@ -138,6 +139,7 @@ export function Onboarding() {
     setDirection(next > step ? 'forward' : 'back');
     setStep(next);
     setAnimKey(k => k + 1);
+    scrollRef.current?.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   }
 
   function handleNext() {
@@ -199,7 +201,7 @@ export function Onboarding() {
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div className="max-w-lg md:max-w-2xl mx-auto px-5 pt-8 pb-6 md:px-6">
           <div key={animKey} style={slideStyle}>
 

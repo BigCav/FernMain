@@ -461,7 +461,7 @@ export function Layout() {
               ref={mobileBellRef}
               onClick={() => setNotifOpen(v => !v)}
               className="relative flex items-center justify-center flex-shrink-0 transition-all active:scale-95"
-              style={{ width: '40px', height: '40px', borderRadius: '14px', background: notifOpen ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)' }}
+              style={{ width: '40px', height: '40px', borderRadius: '14px', background: notifOpen ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)', pointerEvents: navTour ? 'none' : 'auto', opacity: navTour ? 0.4 : 1 }}
             >
               <Bell width={17} height={17} style={{ color: 'rgba(255,255,255,0.7)' }} />
               {unreadCount > 0 && (
@@ -484,6 +484,8 @@ export function Layout() {
                 background: '#ea580c',
                 borderRadius: '14px',
                 boxShadow: '0 4px 14px rgba(234,88,12,0.45)',
+                pointerEvents: navTour ? 'none' : 'auto',
+                opacity: navTour ? 0.4 : 1,
               }}
             >
               <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
