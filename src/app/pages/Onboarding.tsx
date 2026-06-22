@@ -157,11 +157,18 @@ export function Onboarding() {
     go(step + 1);
   }
 
+  const [finishing, setFinishing] = useState(false);
+
   function handleBack()   { go(step - 1); }
   function handleFinish(to = '/') {
-    updateProfile({ onboardingComplete: true });
-    localStorage.setItem('fern_nav_tour_pending', '1');
-    navigate(to);
+    // Show spinner first — delay profile update + navigation so the
+    // router guard doesn't redirect away before the spinner renders
+    setFinishing(true);
+    setTimeout(() => {
+      updateProfile({ onboardingComplete: true });
+      localStorage.setItem('fern_nav_tour_pending', '1');
+      navigate(to);
+    }, 1500);
   }
 
   const canNext = step !== 2 || (
@@ -175,6 +182,21 @@ export function Onboarding() {
   const slideStyle: React.CSSProperties = {
     animation: `${direction === 'forward' ? 'stepSlideIn' : 'stepSlideInBack'} 0.3s cubic-bezier(0.4,0,0.2,1) forwards`,
   };
+
+  if (finishing) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center" style={{ background: '#f7f5f2' }}>
+        <style>{`@keyframes ob-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+        <div style={{
+          width: '52px', height: '52px',
+          border: '4px solid rgba(234,88,12,0.2)',
+          borderTopColor: '#ea580c',
+          borderRadius: '50%',
+          animation: 'ob-spin 0.75s linear infinite',
+        }} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col" style={{ height: '100dvh', background: '#f7f5f2', fontFamily: "'Inter', system-ui, sans-serif" }}>

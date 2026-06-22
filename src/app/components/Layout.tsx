@@ -128,7 +128,15 @@ export function Layout() {
   const [modalOpen, setModalOpen] = useState(false);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [navTour, setNavTour] = useState(() => localStorage.getItem('fern_nav_tour_pending') === '1');
+  const [navTour, setNavTour] = useState(() => {
+    const pending = localStorage.getItem('fern_nav_tour_pending') === '1';
+    if (pending && window.innerWidth >= 768) {
+      // Desktop — tour is mobile-only, skip immediately
+      localStorage.removeItem('fern_nav_tour_pending');
+      return false;
+    }
+    return pending;
+  });
   const [tourIdx, setTourIdx] = useState(0); // starts at 0 = Home highlighted immediately
   const navScrollRef = useRef<HTMLDivElement>(null);
   const navItemRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -400,6 +408,7 @@ export function Layout() {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className={navTour ? 'md:!visible' : ''}
               style={navTour ? { visibility: 'hidden' } : {}}
             >
               <Outlet />
