@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useSyncExternalStore } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { NavLink, Link, Outlet, useLocation } from 'react-router';
-import { LayoutDashboard, PawPrint, Wheat, ClipboardCheck, Plus, Map, Settings, DollarSign, CloudRain, BookOpen, LifeBuoy, User, HelpCircle, Bell, WifiOff, CalendarDays, Package, Sparkles, Lock } from 'lucide-react';
+import { LayoutDashboard, PawPrint, Wheat, ClipboardCheck, Plus, Map, Settings, DollarSign, CloudRain, BookOpen, LifeBuoy, User, HelpCircle, Bell, WifiOff, CalendarDays, Package, Sparkles, Lock, Leaf } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { usePaddocks } from '../context/PaddocksContext';
