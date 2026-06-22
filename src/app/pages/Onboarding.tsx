@@ -513,7 +513,7 @@ export function Onboarding() {
               <ArrowRight width={15} height={15} />
             </button>
           ) : (
-            <button onClick={handleFinish} className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl transition-all active:scale-[0.98]"
+            <button onClick={() => handleFinish()} className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl transition-all active:scale-[0.98]"
               style={{ background: '#ea580c', color: '#fff', fontSize: '14px', fontWeight: 700 }}>
               Go to dashboard
               <ArrowRight width={15} height={15} />
