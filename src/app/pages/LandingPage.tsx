@@ -445,7 +445,7 @@ export function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section className="max-w-4xl mx-auto px-5 pb-16 md:pb-24" id="pricing">
+      <section className="w-full max-w-4xl mx-auto px-4 md:px-5 pb-16 md:pb-24" id="pricing">
         <div className="text-center mb-12">
           <h2 style={{ fontSize: 'clamp(24px, 4vw, 36px)', fontWeight: 800, color: '#111', letterSpacing: '-0.03em', marginBottom: '10px' }}>
             Simple, honest pricing
@@ -454,11 +454,11 @@ export function LandingPage() {
             Start free. Upgrade when your block grows.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
 
           {/* Free */}
           <div
-            className="rounded-2xl p-7 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg md:flex md:flex-col"
+            className="rounded-2xl p-6 md:p-7 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg flex flex-col"
             style={{ background: '#fefefe', border: '1px solid #ebebeb' }}
           >
             <div>

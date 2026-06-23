@@ -1,0 +1,14 @@
+{
+  "name": "Fern - Farm Management",
+  "short_name": "Fern",
+  "description": "Farm management for NZ lifestyle blocks",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0eeeb",
+  "theme_color": "#ea580c",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icon.svg",            "sizes": "any",     "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/apple-touch-icon.svg","sizes": "180x180", "type": "image/svg+xml" }
+  ]
+}
