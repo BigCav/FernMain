@@ -90,17 +90,6 @@ button, a, [role="button"], summary,
   }
 }
 
-/* ── iOS PWA: status bar area uses theme colour ──────────────────────────── */
-@media all and (display-mode: standalone) {
-  body {
-    padding-top: env(safe-area-inset-top);
-    background-color: #ea580c; /* fills the status bar notch area */
-  }
-  body > #root {
-    background-color: #f0eeeb;
-    min-height: 100dvh;
-  }
-}
 
 /* Force light calendar/date picker regardless of OS dark mode */
 input[type="date"],
