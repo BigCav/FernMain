@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Download, X, Leaf, Share } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -35,9 +35,6 @@ export function PWAInstallBanner() {
     localStorage.getItem('fern_pwa_dismissed_v2') === '1'
   );
   const [showIOSPrompt, setShowIOSPrompt] = useState(false);
-  // Bottom sheet slide state
-  const [sheetVisible, setSheetVisible] = useState(false);
-  const sheetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Manifest
@@ -131,20 +128,10 @@ export function PWAInstallBanner() {
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
-  // Slide the bottom sheet in 800ms after the install prompt fires
-  useEffect(() => {
-    if (!prompt) return;
-    const t = setTimeout(() => setSheetVisible(true), 800);
-    return () => clearTimeout(t);
-  }, [prompt]);
-
   function dismiss() {
-    setSheetVisible(false);
-    setTimeout(() => {
-      setDismissed(true);
-      setShowIOSPrompt(false);
-      localStorage.setItem('fern_pwa_dismissed_v2', '1');
-    }, 380);
+    setDismissed(true);
+    setShowIOSPrompt(false);
+    localStorage.setItem('fern_pwa_dismissed_v2', '1');
   }
 
   async function handleAndroidInstall() {
@@ -164,7 +151,7 @@ export function PWAInstallBanner() {
       <div
         className="fixed left-3 right-3 z-[70] md:hidden rounded-2xl px-4 py-4"
         style={{
-          bottom: 'calc(max(env(safe-area-inset-bottom), 12px) + 70px + 8px)',
+          bottom: 'max(env(safe-area-inset-bottom), 16px)',
           background: '#111',
           boxShadow: '0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.08)',
         }}
@@ -198,99 +185,36 @@ export function PWAInstallBanner() {
     );
   }
 
-  // Android: bottom sheet on mobile, small card on desktop
+  // Android native install prompt
   if (prompt) {
     return (
-      <>
-        {/* Mobile bottom sheet */}
-        <div
-          ref={sheetRef}
-          className="md:hidden fixed left-0 right-0 bottom-0 z-[70]"
-          style={{
-            transform: sheetVisible ? 'translateY(0)' : 'translateY(100%)',
-            transition: 'transform 0.38s cubic-bezier(0.22,1,0.36,1)',
-          }}
-        >
-          {/* Scrim — tap outside to dismiss */}
-          <div
-            className="fixed inset-0 -z-10"
-            style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)' }}
-            onClick={dismiss}
-          />
-          <div
-            className="relative rounded-t-3xl px-5 pt-3 pb-6"
-            style={{
-              background: '#111',
-              boxShadow: '0 -8px 40px rgba(0,0,0,0.4)',
-              paddingBottom: 'calc(max(env(safe-area-inset-bottom), 16px) + 16px)',
-            }}
-          >
-            {/* Drag handle */}
-            <div className="flex justify-center mb-5">
-              <div className="w-9 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.2)' }} />
-            </div>
-
-            {/* Icon + text */}
-            <div className="flex items-center gap-4 mb-5">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: '#ea580c', boxShadow: '0 4px 16px rgba(234,88,12,0.4)' }}>
-                <Leaf width={24} height={24} style={{ color: '#fff' }} />
-              </div>
-              <div>
-                <p style={{ fontSize: '17px', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>Install Fern</p>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '2px' }}>
-                  Farm management for NZ lifestyle blocks
-                </p>
-              </div>
-            </div>
-
-            {/* Feature pills */}
-            <div className="flex flex-wrap gap-2 mb-6">
-              {['Works offline', 'Home screen icon', 'Instant load'].map(f => (
-                <span key={f} className="px-3 py-1 rounded-full" style={{ fontSize: '11px', fontWeight: 600, background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  {f}
-                </span>
-              ))}
-            </div>
-
-            {/* CTA buttons */}
-            <button
-              onClick={handleAndroidInstall}
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl transition-all active:scale-[0.98] mb-3"
-              style={{ background: '#ea580c', fontSize: '15px', fontWeight: 700, color: '#fff', boxShadow: '0 4px 16px rgba(234,88,12,0.35)' }}
-            >
-              <Download width={16} height={16} />
-              Add to Home Screen
-            </button>
-            <button
-              onClick={dismiss}
-              className="w-full py-3 rounded-2xl"
-              style={{ fontSize: '14px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', background: 'transparent' }}
-            >
-              Not now
-            </button>
-          </div>
+      <div
+        className="fixed left-3 right-3 z-[70] md:left-auto md:right-5 md:bottom-5 md:w-80 rounded-2xl flex items-center gap-3 px-4 py-3.5"
+        style={{
+          bottom: 'max(env(safe-area-inset-bottom), 16px)',
+          background: '#111',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.07)',
+        }}
+      >
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#ea580c' }}>
+          <Leaf width={16} height={16} style={{ color: '#fff' }} />
         </div>
-
-        {/* Desktop: small card bottom-right */}
-        <div
-          className="hidden md:flex fixed right-5 bottom-5 z-[70] w-80 rounded-2xl items-center gap-3 px-4 py-3.5"
-          style={{ background: '#111', boxShadow: '0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.07)' }}
-        >
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#ea580c' }}>
-            <Leaf width={16} height={16} style={{ color: '#fff' }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p style={{ fontSize: '13px', fontWeight: 700, color: '#fff', marginBottom: '1px' }}>Install Fern</p>
-            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>Add to home screen for quick access</p>
-          </div>
-          <button onClick={handleAndroidInstall} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl flex-shrink-0 active:scale-95" style={{ background: '#ea580c', fontSize: '12px', fontWeight: 700, color: '#fff' }}>
-            <Download width={12} height={12} />Install
-          </button>
-          <button onClick={dismiss} className="flex-shrink-0 p-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
-            <X width={14} height={14} />
-          </button>
+        <div className="flex-1 min-w-0">
+          <p style={{ fontSize: '13px', fontWeight: 700, color: '#fff', marginBottom: '1px' }}>Install Fern</p>
+          <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>Add to home screen for quick access</p>
         </div>
-      </>
+        <button
+          onClick={handleAndroidInstall}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl flex-shrink-0 transition-all active:scale-95"
+          style={{ background: '#ea580c', fontSize: '12px', fontWeight: 700, color: '#fff' }}
+        >
+          <Download width={12} height={12} />
+          Install
+        </button>
+        <button onClick={dismiss} className="flex-shrink-0 p-1 rounded-lg" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <X width={14} height={14} />
+        </button>
+      </div>
     );
   }
 
